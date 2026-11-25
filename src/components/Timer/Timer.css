@@ -1,0 +1,7 @@
+.timer-not-ready {
+    color: red;
+}
+
+.timer-ready {
+    color: green;
+}

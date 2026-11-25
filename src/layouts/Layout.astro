@@ -27,6 +27,9 @@ const title = canonical.host + canonical.pathname;
     </head>
 
     <body>
+        <div class="titlebar">
+            <slot name="title" />
+        </div>
         <main>
             <slot />
         </main>
