@@ -1,4 +1,5 @@
 const HOLD_TIME = 500
+const BREAK_TIME = 200
 
 const timerElements = {
     timer: document.querySelector(".timer-text")
@@ -28,21 +29,35 @@ function timerStop(e) {
     timerData.timeStopped = e.timeStamp
 }
 
+function timerPress(e) {
+    if (e.timeStamp - timerData.timeStopped < BREAK_TIME) return
+    if (!timerData.running) { // TIMER HOLD
+        timerData.spaceHeld = true
+        timerData.spacePressedAt = e.timeStamp
+        setTimeout(render, HOLD_TIME)
+        render()
+    }
+    else {
+        timerStop(e)
+        render()
+    }
+}
+
+function timerRelease(e) {
+    if (!timerData.spaceHeld) return
+    timerData.spaceHeld = false
+    if (e.timeStamp - timerData.spacePressedAt >= HOLD_TIME) {
+        timerStart(e)
+    }
+    render()
+}
+
 function keydownHandler(e) {
     if (e?.repeat) return
 
     switch (e.code) {
         case "Space":
-            if (!timerData.running) { // TIMER HOLD
-                timerData.spaceHeld = true
-                timerData.spacePressedAt = e.timeStamp
-                setTimeout(render, HOLD_TIME)
-                render()
-            }
-            else {
-                timerStop(e)
-                render()
-            }
+            timerPress(e)
             break
         default:
             timerStop(e)
@@ -53,21 +68,20 @@ function keydownHandler(e) {
 function keyupHandler(e) {
     switch (e.code) {
         case "Space":
-            if (!timerData.spaceHeld) return
-            timerData.spaceHeld = false
-            if (e.timeStamp - timerData.spacePressedAt >= HOLD_TIME) {
-                timerStart(e)
-            }
-            render()
+            timerRelease(e)
             break
         default:
             return
     }
 }
 
+function pressDownHandler(e) {
+
+}
+
 function tick() {
     render()
-    if (timerData.running || timerData.spaceHeld) {
+    if (timerData.running) {
         requestAnimationFrame(tick)
     }
 }
@@ -96,6 +110,20 @@ function main() {
     })
     window.addEventListener("blur", () => {
         timerData.spaceHeld = false
+        render()
+    })
+
+    document.addEventListener("touchstart", (e) => {
+        e.preventDefault()
+        timerPress(e)
+    }, { passive: false })
+    document.addEventListener("touchend", (e) => {
+        e.preventDefault()
+        timerRelease(e)
+    })
+    document.addEventListener("touchcancel", () => {
+        timerData.spaceHeld = false
+        render()
     })
 }
 
