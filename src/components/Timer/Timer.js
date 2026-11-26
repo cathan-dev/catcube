@@ -2,10 +2,12 @@ const HOLD_TIME = 500
 const BREAK_TIME = 200
 
 const timerElements = {
-    timer: document.querySelector(".timer-text")
+    timer: document.querySelector(".timer-text"),
+    solveList: document.querySelector(".solve-list")
 }
 
 const timerData = {
+    solves: [],
     running: false,
     spaceHeld: false,
     spacePressedAt: 0,
@@ -27,6 +29,11 @@ function timerStop(e) {
     if (!timerData.running) return
     timerData.running = false
     timerData.timeStopped = e.timeStamp
+    timerData.solves.push({
+        time: (timerData.timeStopped - timerData.timeStarted),
+        date: Date.now()
+    })
+    render()
 }
 
 function timerPress(e) {
@@ -34,12 +41,11 @@ function timerPress(e) {
     if (!timerData.running) { // TIMER HOLD
         timerData.spaceHeld = true
         timerData.spacePressedAt = e.timeStamp
-        setTimeout(render, HOLD_TIME)
-        render()
+        setTimeout(renderTimer, HOLD_TIME)
+        renderTimer()
     }
     else {
         timerStop(e)
-        render()
     }
 }
 
@@ -49,7 +55,7 @@ function timerRelease(e) {
     if (e.timeStamp - timerData.spacePressedAt >= HOLD_TIME) {
         timerStart(e)
     }
-    render()
+    renderTimer()
 }
 
 function keydownHandler(e) {
@@ -61,7 +67,6 @@ function keydownHandler(e) {
             break
         default:
             timerStop(e)
-            render()
     }
 }
 
@@ -75,18 +80,37 @@ function keyupHandler(e) {
     }
 }
 
-function pressDownHandler(e) {
+function buildSolveElement(solve) {
 
+    const li = document.createElement("li")
+    li.className = "solve-item"
+
+    const wrapper = document.createElement("div")
+    wrapper.className = "solve-item-wrapper"
+
+    const timeSpan = document.createElement("span")
+    timeSpan.className = "solve-item-time"
+    timeSpan.textContent = millisecondsToString(solve.time)
+
+    wrapper.appendChild(timeSpan)
+    li.appendChild(wrapper)
+
+    return li
 }
 
 function tick() {
-    render()
+    renderTimer()
     if (timerData.running) {
         requestAnimationFrame(tick)
     }
 }
 
 function render() {
+    renderTimer()
+    renderSolved()
+}
+
+function renderTimer() {
     const timeNow = performance.now()
 
     timerElements.timer.classList.toggle("timer-not-ready", timerData.spaceHeld && timeNow - timerData.spacePressedAt < HOLD_TIME)
@@ -101,7 +125,13 @@ function render() {
     }
 }
 
+function renderSolved() {
+    const solves = timerData.solves.map((solve) => buildSolveElement(solve))
+    timerElements.solveList.replaceChildren(...solves)
+}
+
 function main() {
+    render()
     document.addEventListener("keydown", (e) => {
         keydownHandler(e)
     })
@@ -110,7 +140,7 @@ function main() {
     })
     window.addEventListener("blur", () => {
         timerData.spaceHeld = false
-        render()
+        renderTimer()
     })
 
     document.addEventListener("touchstart", (e) => {
@@ -123,7 +153,7 @@ function main() {
     })
     document.addEventListener("touchcancel", () => {
         timerData.spaceHeld = false
-        render()
+        renderTimer()
     })
 }
 

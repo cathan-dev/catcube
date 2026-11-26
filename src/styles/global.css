@@ -22,13 +22,24 @@
     /* where you are */
     --danger: #FE2736;
     /* backgrounds only, --bg text on top */
+
+    --glow: 0 0 1px currentColor;
 }
+
+/* ---------- FONTS ---------- */
 
 @font-face {
     font-family: "Departure Mono";
     src: url("/fonts/DepartureMono-Regular.woff2") format("woff2");
     font-weight: normal;
     font-display: swap;
+}
+
+/* ---------- BASE ---------- */
+
+::selection {
+    color: var(--bg);
+    background-color: var(--mark);
 }
 
 body {
@@ -45,4 +56,32 @@ body {
     margin: 0;
 
     min-height: 100dvh;
+}
+
+main {
+    display: flex;
+    margin: 1ch;
+    flex: 1;
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 44px;
+    text-shadow: var(--glow);
+}
+
+h2 {
+    font-weight: normal;
+    font-size: 33px;
+    text-shadow: var(--glow);
+}
+
+a {
+    color: var(--interaction);
+    text-decoration-color: var(--muted);
+    text-decoration-thickness: 1px;
+}
+
+.prose {
+    max-width: 65ch;
 }
